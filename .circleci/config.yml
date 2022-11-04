@@ -1,7 +1,7 @@
 version: '2.1'
 orbs:
   python: circleci/python@2.1.1
-  gh: circleci/github-cli@1.0
+  github: circleci/github-cli@1.0
 aliases:
   - executor: &executor
       resource_class: small
@@ -79,7 +79,7 @@ jobs:
           root: .
           paths:
             - dist
-  publish:
+  release-pypi:
     <<: *executor
     steps:
       - checkout
@@ -108,21 +108,25 @@ workflows:
             - py39
             - py310
             - py311
-      - gh/release:
+      - github/release:
           requires:
             - build
-          tag: v0.1.0
-          title: v0.1.0
+          tag: $CIRCLE_TAG
+          title: $CIRCLE_TAG
           context:
             - GITHUB_CREDS
           filters:
             branches:
-              only: main
-      - publish:
+              ignore: /.*/
+            tags:
+              only: /^\d+\.\d+\.\d+$/
+      - release-pypi:
           requires:
-            - gh/release
+            - build
           context:
             - PYPI_CREDS
           filters:
             branches:
-              only: main
+              ignore: /.*/
+            tags:
+              only: /^\d+\.\d+\.\d+$/
