@@ -117,14 +117,12 @@ workflows:
             - GITHUB_CREDS
           filters:
             branches:
-              ignore: /.*/
-            tags:
-              only: /v.*/
+              only: main
       - publish:
           requires:
             - gh/release
+          context:
+            - PYPI_CREDS
           filters:
             branches:
-              ignore: /.*/
-            tags:
-              only: /v.*/
+              only: main
