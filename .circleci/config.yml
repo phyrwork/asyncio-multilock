@@ -25,6 +25,10 @@ jobs:
           pkg-manager: poetry
       - run:
           command: |
+            poetry lock --check
+          name: Check Poetry lockfile up to date
+      - run:
+          command: |
             poetry run isort --check --diff --color .
           name: Check imports sorted
       - run:
