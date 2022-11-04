@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "asyncio-multilock"
+version = "0.1.0"
+description = "asyncio shared/exclusive mode lock"
+authors = ["Connor Newton <connor@ifthenelse.io>"]
+readme = "README.md"
+packages = [{include = "asyncio_multilock"}]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.2.0"
+pytest-runner = "^6.0.0"
+pytest-asyncio = "^0.20.1"
+
+[tool.poetry.group.type.dependencies]
+mypy = "^0.971"
+
+[tool.poetry.group.lint.dependencies]
+black = "^22.6.0"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
