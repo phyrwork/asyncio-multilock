@@ -1,7 +1,8 @@
+from asyncio import Event, create_task, sleep
+
 from pytest import mark, param
 
-from asyncio import Event, create_task, sleep
-from asyncio_multilock import MultiLockType, MultiLock, EventUsedError, HandleUsedError
+from asyncio_multilock import MultiLock, MultiLockType
 
 
 def test_release_not_acquired() -> None:

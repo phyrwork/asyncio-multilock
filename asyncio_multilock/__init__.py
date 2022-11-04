@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from enum import IntEnum
 from asyncio import Event
-from typing import Optional, Dict, Hashable, Iterator, AsyncIterator
+from contextlib import asynccontextmanager, contextmanager
+from enum import IntEnum
 from functools import reduce
-from contextlib import contextmanager, asynccontextmanager
-
+from typing import AsyncIterator, Dict, Hashable, Iterator, Optional
 
 __sentinel__ = object()
 

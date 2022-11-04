@@ -25,8 +25,16 @@ jobs:
           pkg-manager: poetry
       - run:
           command: |
+            poetry run isort --check --diff --color .
+          name: Check imports sorted
+      - run:
+          command: |
+            poetry run flake8
+          name: Check the code style (Flake8)
+      - run:
+          command: |
             poetry run black --check --diff --color .
-          name: Check the code style
+          name: Check the code style (Black)
   type:
     <<: *executor
     steps:
