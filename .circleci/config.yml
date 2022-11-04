@@ -81,6 +81,8 @@ workflows:
           context:
             - GITHUB_CREDS
           filters:
+            branches:
+              ignore: /.*/
             tags:
               only:
                 - v0.1.0
