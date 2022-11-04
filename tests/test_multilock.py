@@ -40,7 +40,8 @@ def test_acquire_nowait_fail_when_exclusive(type: MultiLockType) -> None:
 @mark.parametrize(["type"], [param(type) for type in MultiLockType])
 def test_acquire_nowait_fail_exclusive_when_locked(type: MultiLockType) -> None:
     lock = MultiLock()
-    assert (acquired := lock.acquire_nowait(type))
+    acquired = lock.acquire_nowait(type)
+    assert acquired
     assert lock.locked is type
 
     assert not lock.acquire_nowait(MultiLockType.EXCLUSIVE)
@@ -53,10 +54,12 @@ def test_acquire_nowait_fail_exclusive_when_locked(type: MultiLockType) -> None:
 def test_acquire_nowait_ok_shared_when_shared() -> None:
     lock = MultiLock()
 
-    assert (primary := lock.acquire_nowait(MultiLockType.SHARED))
+    primary = lock.acquire_nowait(MultiLockType.SHARED)
+    assert primary
     assert lock.locked is MultiLockType.SHARED
 
-    assert (secondary := lock.acquire_nowait(MultiLockType.SHARED))
+    secondary = lock.acquire_nowait(MultiLockType.SHARED)
+    assert secondary
     assert lock.locked is MultiLockType.SHARED
 
     lock.release(primary)
@@ -72,7 +75,8 @@ async def test_acquire_immediate_when_unlocked(type: MultiLockType) -> None:
     lock = MultiLock()
     assert not lock.locked
 
-    assert (acquired := await lock.acquire(type))
+    acquired = await lock.acquire(type)
+    assert acquired
     assert lock.locked is type
 
     lock.release(acquired)
@@ -124,10 +128,12 @@ async def test_acquire_wait_exclusive_when_locked(type: MultiLockType):
 @mark.timeout(3)
 async def test_acquire_immediate_shared_when_shared():
     lock = MultiLock()
-    assert (primary := await lock.acquire(MultiLockType.SHARED))
+    primary = await lock.acquire(MultiLockType.SHARED)
+    assert primary
     assert lock.locked is MultiLockType.SHARED
 
-    assert (secondary := await lock.acquire(MultiLockType.SHARED))
+    secondary = await lock.acquire(MultiLockType.SHARED)
+    assert secondary
     assert lock.locked is MultiLockType.SHARED
 
     lock.release(primary)
@@ -151,7 +157,8 @@ async def test_notify_immediate_when_unlocked(type: MultiLockType):
 @mark.parametrize(["type"], [param(type) for type in MultiLockType])
 async def test_notify_wait_when_exclusive(type: MultiLockType):
     lock = MultiLock()
-    assert (handle := lock.acquire_nowait(MultiLockType.EXCLUSIVE))
+    handle = lock.acquire_nowait(MultiLockType.EXCLUSIVE)
+    assert handle
     assert lock.locked is MultiLockType.EXCLUSIVE
 
     with lock.notify(type) as available:
@@ -164,7 +171,8 @@ async def test_notify_wait_when_exclusive(type: MultiLockType):
 @mark.parametrize(["type"], [param(type) for type in MultiLockType])
 async def test_notify_wait_exclusive_when_locked(type: MultiLockType):
     lock = MultiLock()
-    assert (handle := lock.acquire_nowait(type))
+    handle = lock.acquire_nowait(type)
+    assert handle
     assert lock.locked is type
 
     with lock.notify(MultiLockType.EXCLUSIVE) as available:

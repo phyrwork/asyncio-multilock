@@ -3,8 +3,11 @@ from __future__ import annotations
 from enum import IntEnum
 from asyncio import Event
 from typing import Optional, Dict, Hashable, Iterator, AsyncIterator
-from functools import reduce, cached_property
+from functools import reduce
 from contextlib import contextmanager, asynccontextmanager
+
+
+__sentinel__ = object()
 
 
 class LockError(Exception):
@@ -51,18 +54,23 @@ class MultiLock:
     """
 
     def __init__(self):
+        self._locked: Optional[MultiLockType] = __sentinel__  # type: ignore
         self._acquire: Dict[Hashable, MultiLockType] = {}
         self._notify: Dict[Event, MultiLockType] = {}
 
-    @cached_property
+    @property
     def locked(self) -> Optional[MultiLockType]:
         """Lock state.
 
         None if not locked. Acquired lock type otherwise.
         """
-        if not self._acquire:
-            return None
-        return reduce(MultiLockType.max, self._acquire.values())
+        if self._locked is __sentinel__:
+            self._locked = (
+                None
+                if not self._acquire
+                else reduce(MultiLockType.max, self._acquire.values())
+            )
+        return self._locked
 
     @contextmanager
     def notify(
@@ -114,7 +122,7 @@ class MultiLock:
                 f"{id(self)}: handle {id(handle)} already in acquired"
             )
         self._acquire[handle] = type
-        self.__dict__.pop("locked", None)
+        self._locked = __sentinel__  # type: ignore
         return handle
 
     async def acquire(
@@ -141,7 +149,7 @@ class MultiLock:
 
     def release(self, handle: Hashable) -> None:
         self._acquire.pop(handle, None)  # OK to release unknown handle.
-        self.__dict__.pop("locked", None)
+        self._locked = __sentinel__  # type: ignore
         for handle, type in self._notify.items():
             if not self.locked or MultiLockType.EXCLUSIVE not in (self.locked, type):
                 handle.set()
