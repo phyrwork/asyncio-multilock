@@ -73,8 +73,6 @@ jobs:
     <<: *executor
     steps:
       - checkout
-      - python/install-packages:
-          pkg-manager: poetry
       - run:
           command: |
             poetry build
