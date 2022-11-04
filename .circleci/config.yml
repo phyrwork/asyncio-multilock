@@ -6,7 +6,7 @@ aliases:
   - executor: &executor
       resource_class: small
       executor: python/default
-  - build: &build
+  - test: &test
       <<: *executor
       steps:
         - checkout
@@ -46,25 +46,49 @@ jobs:
             poetry run mypy -p asyncio_multilock
           name: Type check the code
   py37:
-    <<: *build
+    <<: *test
     docker:
       - image: cimg/python:3.7
   py38:
-    <<: *build
+    <<: *test
     docker:
       - image: cimg/python:3.8
   py39:
-    <<: *build
+    <<: *test
     docker:
       - image: cimg/python:3.9
   py310:
-    <<: *build
+    <<: *test
     docker:
       - image: cimg/python:3.10
   py311:
-    <<: *build
+    <<: *test
     docker:
       - image: cimg/python:3.11
+  build:
+    <<: *executor
+    steps:
+      - checkout
+      - python/install-packages:
+          pkg-manager: poetry
+      - run:
+          command: |
+            poetry build
+          name: Build package
+      - persist_to_workspace:
+          root: .
+          paths:
+            - dist
+  publish:
+    <<: *executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          command: |
+            poetry publish
+          name: Publish package
 workflows:
   main:
     jobs:
@@ -75,7 +99,7 @@ workflows:
       - py39
       - py310
       - py311
-      - gh/release:
+      - build:
           requires:
             - lint
             - type
@@ -84,6 +108,9 @@ workflows:
             - py39
             - py310
             - py311
+      - gh/release:
+          requires:
+            - build
           tag: v0.1.0
           title: v0.1.0
           context:
@@ -92,5 +119,12 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only:
-                - v0.1.0
+              only: /v.*/
+      - publish:
+          requires:
+            - gh/release
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v.*/

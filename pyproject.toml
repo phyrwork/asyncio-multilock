@@ -25,6 +25,12 @@ flake8 = "^5.0.4"
 flake8-noqa = "^1.2.9"
 flake8-bugbear = "^22.10.27"
 
+[[tool.poetry.source]]
+name = "test-pypi"
+url = "https://test.pypi.org/legacy/"
+default = false
+secondary = false
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 
