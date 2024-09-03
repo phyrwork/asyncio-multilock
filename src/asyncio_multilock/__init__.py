@@ -11,6 +11,7 @@ from typing import (
     Iterator,
     Optional,
     FrozenSet,
+    Protocol,
 )
 
 
@@ -254,3 +255,58 @@ class MultiLockSet(FrozenSet[MultiLock]):
     def release(self, handle: Hashable) -> None:
         for lock in self:
             lock.release(handle)
+
+
+class MultiLockable(Protocol):
+    """Shared/exclusive mode lock interface."""
+
+    @property
+    def locked(self) -> MultiLockType:
+        """Lock state.
+
+        None if not locked. Acquired lock type otherwise.
+        """
+
+    @contextmanager
+    def notify(
+        self, __type: MultiLockType, __event: Optional[Event] = None
+    ) -> Iterator[Event]:
+        """Context in which event is set when given lock type is acquirable.
+
+        :param __type: Lock type.
+        :param __event: User-specified lock type acquirable event.
+        :return: Lock type acquirable event.
+        """
+
+    async def wait(self, __type: MultiLockType, __event: Optional[Event]) -> None:
+        """Wait for given lock type to be acquirable.
+
+        :param __type: Lock type.
+        :param __event: User-specified lock type acquirable event.
+        """
+
+    def acquire_nowait(
+        self, __type: MultiLockType, __handle: Optional[Hashable] = None
+    ) -> Optional[Hashable]:
+        """Acquire lock with given type (non-blocking).
+
+        :param __type: Lock type.
+        :param __handle: User-specified lock handle.
+        :return: Handle if lock is acquired. None otherwise.
+        """
+
+    async def acquire(
+        self,
+        __type: MultiLockType,
+        __handle: Optional[Hashable] = None,
+        __event: Optional[Event] = None,
+    ) -> Hashable:
+        """Acquire lock with given type (blocking).
+
+        :param __type: Lock type.
+        :param __handle: User-specified lock handle.
+        :param __event: User-specified lock type acquirable event.
+        :return: Handle if lock is acquired. None otherwise.
+        """
+
+    def release(self, __handle: Hashable) -> None: ...
