@@ -1,10 +1,17 @@
 from __future__ import annotations
 
-from asyncio import Event
-from contextlib import asynccontextmanager, contextmanager
+from asyncio import CancelledError, Event, create_task
+from contextlib import ExitStack, asynccontextmanager, contextmanager, suppress
 from enum import IntEnum
 from functools import reduce
-from typing import AsyncIterator, Dict, Hashable, Iterator, Optional
+from typing import (
+    AsyncIterator,
+    Dict,
+    FrozenSet,
+    Hashable,
+    Iterator,
+    Optional,
+)
 
 __sentinel__ = object()
 
@@ -172,3 +179,79 @@ class MultiLock:
             yield handle
         finally:
             self.release(handle)
+
+
+# class MultiLockSet(FrozenSet[MultiLock]):
+#     @property
+#     def locked(self) -> Optional[MultiLockType]:
+#         if not self:
+#             return None
+#
+#         def max(
+#             a: MultiLockType | None, b: MultiLockType | None
+#         ) -> MultiLockType | None:
+#             if a is None:
+#                 return b
+#             if b is None:
+#                 return a
+#             return MultiLockType.max(a, b)
+#
+#         return reduce(max, (lock.locked for lock in self))
+#
+#     @asynccontextmanager
+#     async def notify(
+#         self, type: MultiLockType, event: Optional[Event] = None
+#     ) -> AsyncIterator[Event]:
+#         if event is None:
+#             event = Event()
+#         _events = Event()
+#
+#         async def listen() -> None:
+#             assert event
+#             _events.clear()
+#             locked = self.locked
+#             if not locked or MultiLockType.EXCLUSIVE not in (locked, type):
+#                 event.set()
+#
+#         listener = create_task(listen())
+#
+#         try:
+#             with ExitStack() as stack:
+#                 for lock in self:
+#                     stack.enter_context(lock.notify(type, _events))
+#                 yield event
+#         finally:
+#             listener.cancel()
+#             with suppress(CancelledError):
+#                 await listener
+#
+#     def acquire_nowait(
+#         self, type: MultiLockType, handle: Optional[Hashable] = None
+#     ) -> Optional[Hashable]:
+#         locked = self.locked
+#         if locked and MultiLockType.EXCLUSIVE in (locked, type):
+#             return None
+#         if handle is None:
+#             handle = object()
+#         for lock in self:
+#             assert lock.acquire_nowait(type, handle)
+#         return handle
+#
+#     async def acquire(
+#         self,
+#         type: MultiLockType,
+#         handle: Optional[Hashable] = None,
+#         event: Optional[Event] = None,
+#     ) -> Hashable:
+#         async with self.notify(type, event) as event:
+#             assert event
+#             if not handle:
+#                 handle = object()
+#             while not self.acquire_nowait(type, handle):
+#                 await event.wait()
+#                 event.clear()
+#             return handle
+#
+#     def release(self, handle: Hashable) -> None:
+#         for lock in self:
+#             lock.release(handle)

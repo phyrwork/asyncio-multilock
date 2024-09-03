@@ -7,7 +7,7 @@ from asyncio_multilock import MultiLock, MultiLockType
 
 def test_release_not_acquired() -> None:
     lock = MultiLock()
-    unknown = Event()
+    unknown = object()
     lock.release(unknown)
 
 
@@ -92,16 +92,16 @@ async def test_acquire_wait_when_exclusive(type: MultiLockType) -> None:
     assert exclusive
     assert lock.locked is MultiLockType.EXCLUSIVE
 
-    acquired = object()
+    handle = object()
     event = Event()
-    task = create_task(lock.acquire(type, acquired, event))
+    task = create_task(lock.acquire(type, handle, event))
     while event not in lock._notify:
         await sleep(0)
 
     lock.release(exclusive)
-    assert await task
+    assert await task is handle
 
-    lock.release(acquired)
+    lock.release(handle)
     assert not lock.locked
 
 
