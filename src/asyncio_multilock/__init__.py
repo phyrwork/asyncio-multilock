@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from asyncio import CancelledError, Event, create_task
-from contextlib import ExitStack, asynccontextmanager, contextmanager, suppress
+from asyncio import Event
+from contextlib import asynccontextmanager, contextmanager
 from enum import IntEnum
 from functools import reduce
 from typing import (
     AsyncIterator,
     Dict,
-    FrozenSet,
     Hashable,
     Iterator,
     Optional,
@@ -16,16 +15,13 @@ from typing import (
 __sentinel__ = object()
 
 
-class LockError(Exception):
-    ...
+class LockError(Exception): ...
 
 
-class EventUsedError(LockError):
-    ...
+class EventUsedError(LockError): ...
 
 
-class HandleUsedError(LockError):
-    ...
+class HandleUsedError(LockError): ...
 
 
 class MultiLockType(IntEnum):
@@ -239,7 +235,7 @@ class MultiLock:
 #
 #     async def acquire(
 #         self,
-#         type: MultiLockType,
+#         \type: MultiLockType,
 #         handle: Optional[Hashable] = None,
 #         event: Optional[Event] = None,
 #     ) -> Hashable:

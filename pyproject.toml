@@ -6,7 +6,7 @@ authors = [
     {name = "Connor Newton", email = "connor@ifthenelse.io"}
 ]
 readme = "README.md"
-requires-python = ">=3.11,<4.0"
+requires-python = ">=3.9,<4.0"
 dependencies = []
 
 [build-system]
@@ -21,6 +21,7 @@ dev-dependencies = [
     "pytest-runner>=6.0.1",
     "pytest-asyncio>=0.24.0",
     "pytest-timeout>=2.3.1",
+    "pytest-cov>=5.0.0",
 ]
 
 [tool.pytest.ini_options]

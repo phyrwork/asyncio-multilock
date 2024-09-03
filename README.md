@@ -1,6 +1,6 @@
 # asyncio-multilock
 
-[![asyncio-multilock](https://circleci.com/gh/phyrwork/asyncio-multilock/tree/main.svg?style=svg)](https://app.circleci.com/pipelines/github/phyrwork/asyncio-multilock?branch=main)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/phyrwork/asyncio-multilock/ci.yaml)
 
 `asyncio_multilock` provides `MultiLock`, an `asyncio` based lock with built-in
 shared/exclusive mode semantics.
