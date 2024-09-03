@@ -38,7 +38,9 @@ def test_acquire_nowait_fail_when_exclusive(type: MultiLockType) -> None:
     assert not lock.locked
 
 
-@mark.parametrize(["type"], [param(type) for type in MultiLockType])
+@mark.parametrize(
+    ["type"], [param(MultiLockType.SHARED), param(MultiLockType.EXCLUSIVE)]
+)
 def test_acquire_nowait_fail_exclusive_when_locked(type: MultiLockType) -> None:
     lock = MultiLock()
     acquired = lock.acquire_nowait(type)
@@ -106,7 +108,9 @@ async def test_acquire_wait_when_exclusive(type: MultiLockType) -> None:
 
 
 @mark.timeout(3)
-@mark.parametrize(["type"], [param(type) for type in MultiLockType])
+@mark.parametrize(
+    ["type"], [param(MultiLockType.SHARED), param(MultiLockType.EXCLUSIVE)]
+)
 async def test_acquire_wait_exclusive_when_locked(type: MultiLockType):
     lock = MultiLock()
     acquired = await lock.acquire(type)
@@ -169,7 +173,9 @@ async def test_notify_wait_when_exclusive(type: MultiLockType):
 
 
 @mark.timeout(3)
-@mark.parametrize(["type"], [param(type) for type in MultiLockType])
+@mark.parametrize(
+    ["type"], [param(MultiLockType.SHARED), param(MultiLockType.EXCLUSIVE)]
+)
 async def test_notify_wait_exclusive_when_locked(type: MultiLockType):
     lock = MultiLock()
     handle = lock.acquire_nowait(type)

@@ -12,8 +12,6 @@ from typing import (
     Optional,
 )
 
-__sentinel__ = object()
-
 
 class LockError(Exception): ...
 
@@ -25,7 +23,7 @@ class HandleUsedError(LockError): ...
 
 
 class MultiLockType(IntEnum):
-    # 0 not used so that type is always truthy.
+    NONE = 0
     SHARED = 1
     EXCLUSIVE = 2
 
@@ -34,6 +32,18 @@ class MultiLockType(IntEnum):
         if a > b:
             return b
         return a
+
+    def excludes(self, other: MultiLockType) -> bool:
+        if self is MultiLockType.NONE:
+            return False
+
+        return MultiLockType.EXCLUSIVE in (self, other)
+
+    def includes(self, other: MultiLockType) -> bool:
+        if self is MultiLockType.NONE:
+            return True
+
+        return MultiLockType.EXCLUSIVE not in (self, other)
 
 
 class MultiLock:
@@ -55,20 +65,20 @@ class MultiLock:
     If not given they will be created and returned as appropriate.
     """
 
-    def __init__(self):
-        self._locked: Optional[MultiLockType] = __sentinel__  # type: ignore
+    def __init__(self) -> None:
+        self._locked: Optional[MultiLockType] = None
         self._acquire: Dict[Hashable, MultiLockType] = {}
         self._notify: Dict[Event, MultiLockType] = {}
 
     @property
-    def locked(self) -> Optional[MultiLockType]:
+    def locked(self) -> MultiLockType:
         """Lock state.
 
         None if not locked. Acquired lock type otherwise.
         """
-        if self._locked is __sentinel__:
+        if self._locked is None:
             self._locked = (
-                None
+                MultiLockType.NONE
                 if not self._acquire
                 else reduce(MultiLockType.max, self._acquire.values())
             )
@@ -90,7 +100,7 @@ class MultiLock:
             raise EventUsedError(f"{id(self)}: event {id(event)} already in notify")
         self._notify[event] = type
         try:
-            if not self.locked or MultiLockType.EXCLUSIVE not in (self.locked, type):
+            if self.locked.includes(type):
                 event.set()
             yield event
         finally:
@@ -115,7 +125,7 @@ class MultiLock:
         :param handle: User-specified lock handle.
         :return: Handle if lock is acquired. None otherwise.
         """
-        if self.locked and MultiLockType.EXCLUSIVE in (self.locked, type):
+        if self.locked.excludes(type):
             return None
         if handle is None:
             handle = object()
@@ -124,7 +134,7 @@ class MultiLock:
                 f"{id(self)}: handle {id(handle)} already in acquired"
             )
         self._acquire[handle] = type
-        self._locked = __sentinel__  # type: ignore
+        self._locked = None
         return handle
 
     async def acquire(
@@ -151,9 +161,9 @@ class MultiLock:
 
     def release(self, handle: Hashable) -> None:
         self._acquire.pop(handle, None)  # OK to release unknown handle.
-        self._locked = __sentinel__  # type: ignore
+        self._locked = None
         for handle, type in self._notify.items():
-            if not self.locked or MultiLockType.EXCLUSIVE not in (self.locked, type):
+            if self.locked.includes(type):
                 handle.set()
 
     @asynccontextmanager

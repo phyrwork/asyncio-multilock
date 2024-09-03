@@ -7,7 +7,7 @@ shared/exclusive mode semantics.
 
 `MultiLock.locked` can be in one of three states:
 
-1. `None` - not locked;
+1. `MultiLockType.NONE` - not acquired;
 2. `MultiLockType.SHARED` - acquired one or more times in shared mode;
 3. `MultiLockType.EXCLUSIVE` - acquired one time in exclusive mode.
 
